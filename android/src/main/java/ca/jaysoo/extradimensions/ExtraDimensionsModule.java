@@ -1,9 +1,5 @@
 package ca.jaysoo.extradimensions;
 
-import java.lang.Math;
-import java.lang.reflect.InvocationTargetException;
-
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -12,15 +8,14 @@ import android.view.Display;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
-    private Activity mCurrentActivity;
 
     public ExtraDimensionsModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        mCurrentActivity = getCurrentActivity();
     }
 
     @Override
@@ -40,12 +35,14 @@ public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
         //
         // See: http://developer.android.com/reference/android/view/Display.html#getRealMetrics(android.util.DisplayMetrics)
         if (Build.VERSION.SDK_INT >= 17) {
-            Display display = mCurrentActivity.getWindowManager().getDefaultDisplay();
-            try {
-                Display.class.getMethod("getRealMetrics", DisplayMetrics.class).invoke(display, metrics);
-            } catch (InvocationTargetException e) {
-            } catch (IllegalAccessException e) {
-            } catch (NoSuchMethodException e) {
+            if (getCurrentActivity() != null) {
+                Display display = getCurrentActivity().getWindowManager().getDefaultDisplay();
+                try {
+                    Display.class.getMethod("getRealMetrics", DisplayMetrics.class).invoke(display, metrics);
+                } catch (InvocationTargetException e) {
+                } catch (IllegalAccessException e) {
+                } catch (NoSuchMethodException e) {
+                }
             }
         }
 
@@ -70,8 +67,9 @@ public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
         final float realHeight = getRealHeight(metrics);
         final Context ctx = getReactApplicationContext();
         final DisplayMetrics usableMetrics = ctx.getResources().getDisplayMetrics();
-
-        mCurrentActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        if (getCurrentActivity() != null) {
+            getCurrentActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        }
         final int usableHeight = usableMetrics.heightPixels;
 
         return Math.max(0, realHeight - usableHeight / metrics.density);
