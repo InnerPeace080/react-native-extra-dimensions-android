@@ -13,16 +13,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class ExtraDimensionsPackage implements ReactPackage {
-    private Activity mCurrentActivity;
-
-    public ExtraDimensionsPackage(Activity activity) {
-        mCurrentActivity = activity;
-    }
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
-            new ExtraDimensionsModule(reactContext, mCurrentActivity)
+            new ExtraDimensionsModule(reactContext)
         );
     }
 
