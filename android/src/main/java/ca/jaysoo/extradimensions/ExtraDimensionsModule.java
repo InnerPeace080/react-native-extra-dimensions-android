@@ -1,5 +1,6 @@
 package ca.jaysoo.extradimensions;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -13,9 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
+    private Activity mCurrentActivity;
 
-    public ExtraDimensionsModule(ReactApplicationContext reactContext) {
+    public ExtraDimensionsModule(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
+        mCurrentActivity = activity;
     }
 
     @Override
@@ -35,15 +38,14 @@ public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
         //
         // See: http://developer.android.com/reference/android/view/Display.html#getRealMetrics(android.util.DisplayMetrics)
         if (Build.VERSION.SDK_INT >= 17) {
-            if (getCurrentActivity() != null) {
-                Display display = getCurrentActivity().getWindowManager().getDefaultDisplay();
-                try {
-                    Display.class.getMethod("getRealMetrics", DisplayMetrics.class).invoke(display, metrics);
-                } catch (InvocationTargetException e) {
-                } catch (IllegalAccessException e) {
-                } catch (NoSuchMethodException e) {
-                }
+            Display display = mCurrentActivity.getWindowManager().getDefaultDisplay();
+            try {
+                Display.class.getMethod("getRealMetrics", DisplayMetrics.class).invoke(display, metrics);
+            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException e) {
+            } catch (NoSuchMethodException e) {
             }
+
         }
 
         constants.put("REAL_WINDOW_HEIGHT", getRealHeight(metrics));
@@ -67,9 +69,7 @@ public class ExtraDimensionsModule extends ReactContextBaseJavaModule {
         final float realHeight = getRealHeight(metrics);
         final Context ctx = getReactApplicationContext();
         final DisplayMetrics usableMetrics = ctx.getResources().getDisplayMetrics();
-        if (getCurrentActivity() != null) {
-            getCurrentActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        }
+        mCurrentActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
         final int usableHeight = usableMetrics.heightPixels;
 
         return Math.max(0, realHeight - usableHeight / metrics.density);
